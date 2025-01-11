@@ -50,9 +50,40 @@ type Hit struct {
 	Score_             *Float64                   `json:"_score,omitempty"`
 	SeqNo_             *int64                     `json:"_seq_no,omitempty"`
 	Shard_             *string                    `json:"_shard,omitempty"`
-	Sort               []FieldValue               `json:"sort,omitempty"`
+	Sort               []SortValue               `json:"sort,omitempty"`
 	Source_            json.RawMessage            `json:"_source,omitempty"`
 	Version_           *int64                     `json:"_version,omitempty"`
+}
+
+type SortValue struct {
+	StrVal     *string
+	Uint64Val  *uint64
+	Float64Val *float64
+}
+
+func (s *SortValue) UnmarshalJSON(data []byte) error {
+	// Try string
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		s.StrVal = &str
+		return nil
+	}
+
+	// Try uint64
+	var u uint64
+	if err := json.Unmarshal(data, &u); err == nil {
+		s.Uint64Val = &u
+		return nil
+	}
+
+	// Try float64
+	var f float64
+	if err := json.Unmarshal(data, &f); err == nil {
+		s.Float64Val = &f
+		return nil
+	}
+
+	return errors.New("Wrong type in SortValue")
 }
 
 func (s *Hit) UnmarshalJSON(data []byte) error {
