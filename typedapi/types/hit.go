@@ -50,7 +50,7 @@ type Hit struct {
 	Score_             *Float64                   `json:"_score,omitempty"`
 	SeqNo_             *int64                     `json:"_seq_no,omitempty"`
 	Shard_             *string                    `json:"_shard,omitempty"`
-	Sort               []SortValue               `json:"sort,omitempty"`
+	Sort               []SortValue                `json:"sort,omitempty"`
 	Source_            json.RawMessage            `json:"_source,omitempty"`
 	Version_           *int64                     `json:"_version,omitempty"`
 }
@@ -62,6 +62,13 @@ type SortValue struct {
 }
 
 func (s *SortValue) UnmarshalJSON(data []byte) error {
+	// if data is null, all values are nil
+	// not to be confused with string "null", if the data is string "null"
+	// data would be `"null"` here data is `null` without quotes
+	if bytes.Equal(data, []byte("null")) {
+		return nil
+	}
+
 	// Try string
 	var str string
 	if err := json.Unmarshal(data, &str); err == nil {
